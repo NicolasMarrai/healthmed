@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase'; // Conexão Supabase
+import { supabase } from '@/lib/supabase'; // Conexão Supabase......
 
 export default function CadastroPage() {
   const [nome, setNome] = useState('');
