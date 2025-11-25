@@ -32,7 +32,7 @@ export default function CadastroPage() {
 
       if (authError) {
         // Exibe a mensagem de erro do Supabase (ex: "Anonymous sign-ins are disabled")
-        setErro(authError.message || 'Erro no cadastro. Verifique a senha (mínimo 6 caracteres).');
+        setErro(authError.message || 'Erro no cadastro. Verifique a senha (mínimo 6 caracteres)');
         setCarregando(false);
         return;
       }
