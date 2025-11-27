@@ -13,37 +13,39 @@ export default function LoginPage() {
   const [carregando, setCarregando] = useState(false);
   const router = useRouter();
   
-  // Opcional: Redireciona usuários já logados
+  // Verifica se já está logado
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        // Se houver sessão, faz a checagem do status_assinatura
-        checarStatusAssinatura(session.user.id);
-      } else {
-        setCarregando(false);
-      }
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setCarregando(false); // Apenas define que terminou de carregar
   }, []); 
   
   // Função para checar o status e redirecionar
   const checarStatusAssinatura = async (userId: string) => {
+      console.log('Verificando usuário ID:', userId);
+      
       const { data: userData, error: supabaseError } = await supabase
         .from('usuarios')
         .select('status_assinatura') 
         .eq('id', userId) 
         .single(); 
 
+      console.log('Dados do usuário:', userData);
+      console.log('Erro Supabase:', supabaseError);
+
       if (supabaseError || !userData) {
-        // Se o registro não for encontrado, redireciona para o pagamento por segurança.
+        console.log('Usuário não encontrado, redirecionando para pagamento');
         router.push('/pagamento-inicial'); 
         return;
       }
 
-      // 2. Verifica se o usuário está ATIVO
-      if (userData.status_assinatura === 'ativo') {
+      // Verifica status (aceita 'ativo' ou 'ACTIVE')
+      const status = userData.status_assinatura?.toLowerCase();
+      console.log('Status encontrado:', status);
+      
+      if (status === 'ativo' || status === 'active') {
+        console.log('Status ativo! Redirecionando para dashboard');
         router.push('/dashboard'); 
       } else {
+        console.log('Status inativo, redirecionando para pagamento');
         router.push('/pagamento-inicial'); 
       }
       setCarregando(false);

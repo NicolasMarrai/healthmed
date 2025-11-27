@@ -83,7 +83,7 @@ export default function PagamentoInicialPage() {
           disabled={loading}
           className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
         >
-          {loading ? 'Carregando...' : 'Pagar Agora - R$ 1,00'}
+          {loading ? 'Carregando...' : 'Pagar Agora - R$ 0.10'}
         </button>
         
         <p className="mt-4 text-xs text-gray-400">
