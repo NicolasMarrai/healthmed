@@ -37,7 +37,7 @@ export default function LoginPage() {
         return;
       }
 
-      // Verifica status (aceita 'ativo' ou 'ACTIVE')
+      //Verifica status (aceita 'ativo' ou 'ACTIVE')....
       const status = userData.status_assinatura?.toLowerCase();
       console.log('Status encontrado:', status);
       
