@@ -375,4 +375,4 @@ Para suporte e dúvidas:
 
 ---
 
-**HealthMed** - Transformando a educação médica através da tecnologia 🏥✨
+**HealthMed** - Transformando a educação médica através da tecnologia 
