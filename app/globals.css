@@ -1,8 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #141313;
-  --foreground: #171717;
+  /* Fundo */
+  --background-dark: #000033;
+  --background-navy: #00004D;
+
+  /* Azul claro (letras principais) */
+  --primary-cyan: #4DD0E1;
+  --primary-light: #40C4FF;
+
+  /* Azul médio (texto) */
+  --text-blue: #5C9EAD;
+  --text-medium: #6BA3BE;
+
+  /* Branco/Claro */
+  --white: #FFFFFF;
+  --light-blue: #E8F5F7;
+  
+  --background: #ffffff;
+  --foreground: #000033;
 }
 
 @theme inline {
@@ -10,13 +26,15 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #101010;
-  }
+  
+  /* Cores personalizadas do HealthMed */
+  --color-brand-dark: #000033;
+  --color-brand-navy: #00004D;
+  --color-brand-cyan: #4DD0E1;
+  --color-brand-light: #40C4FF;
+  --color-brand-text: #5C9EAD;
+  --color-brand-medium: #6BA3BE;
+  --color-brand-bg-light: #E8F5F7;
 }
 
 body {
