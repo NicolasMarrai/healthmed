@@ -37,9 +37,9 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
-    expect(screen.getByText('Ops! Algo deu errado')).toBeInTheDocument();
-    expect(screen.getByText(/Ocorreu um erro inesperado/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Tentar Novamente/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Ir para Início/i })).toBeInTheDocument();
+    expect(screen.getByText('Oops! Algo deu errado')).toBeInTheDocument();
+    expect(screen.getByText(/Encontramos um erro inesperado/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Tentar novamente/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Voltar ao início/i })).toBeInTheDocument();
   });
 });

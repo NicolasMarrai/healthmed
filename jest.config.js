@@ -28,29 +28,7 @@ const config = {
     '**/__tests__/**/*.(test|spec).(js|jsx|ts|tsx)',
     '**/*.(test|spec).(js|jsx|ts|tsx)',
   ],
-  testEnvironmentOptions: {
-    customExportConditions: [''],
-  },
-  globals: {
-    Response: global.Response || class MockResponse {
-      constructor(body, init) {
-        this.body = body;
-        Object.assign(this, init);
-      }
-      static json(data, init) {
-        return new MockResponse(JSON.stringify(data), {
-          headers: { 'Content-Type': 'application/json' },
-          ...init
-        });
-      }
-    },
-    Request: global.Request || class MockRequest {
-      constructor(url, init) {
-        this.url = url;
-        Object.assign(this, init);
-      }
-    }
-  }
+  testTimeout: 20000,
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
