@@ -362,7 +362,7 @@ export default function Home() {
           </div>
           
           <div className="border-t border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-gray-400">
-            <p className="text-sm sm:text-base">&copy; 2024 HealthMed. Todos os direitos reservados.</p>
+            <p className="text-sm sm:text-base">&copy; 2026 HealthMed. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

@@ -21,9 +21,9 @@ export const metadata: Metadata = {
   creator: "HealthMed",
   publisher: "HealthMed",
   icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
   },
   openGraph: {
     title: "HealthMed - Transforme sua Educação Médica",
