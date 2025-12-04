@@ -1,0 +1,332 @@
+openapi: 3.0.0
+info:
+  title: HealthMed API
+  description: API da plataforma de ensino médico HealthMed
+  version: 1.0.0
+  contact:
+    name: HealthMed Support
+    email: suporte@healthmed.com.br
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Desenvolvimento
+  - url: https://healthmed.vercel.app
+    description: Produção
+
+tags:
+  - name: Health
+    description: Endpoints de monitoramento
+  - name: Authentication
+    description: Autenticação de usuários
+  - name: Aulas
+    description: Gerenciamento de aulas
+  - name: Pagamento
+    description: Processamento de pagamentos
+
+paths:
+  /api/health:
+    get:
+      tags:
+        - Health
+      summary: Verifica status da aplicação
+      description: Retorna o status de saúde da aplicação e suas dependências (database, CMS)
+      responses:
+        '200':
+          description: Aplicação saudável
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-12-04T10:00:00.000Z"
+                  status:
+                    type: string
+                    enum: [healthy, unhealthy]
+                    example: healthy
+                  checks:
+                    type: object
+                    properties:
+                      database:
+                        $ref: '#/components/schemas/HealthCheck'
+                      cms:
+                        $ref: '#/components/schemas/HealthCheck'
+        '503':
+          description: Serviço indisponível
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: unhealthy
+                  checks:
+                    type: object
+
+  /api/metrics:
+    get:
+      tags:
+        - Health
+      summary: Métricas do sistema
+      description: Retorna métricas de performance do sistema (CPU, memória, uptime)
+      responses:
+        '200':
+          description: Métricas do sistema
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                  uptime:
+                    type: number
+                    description: Tempo de execução em segundos
+                  memory:
+                    type: object
+                    properties:
+                      heapUsed:
+                        type: number
+                        description: Memória heap usada em MB
+                      heapTotal:
+                        type: number
+                        description: Memória heap total em MB
+                      external:
+                        type: number
+                        description: Memória externa em MB
+                      rss:
+                        type: number
+                        description: RSS em MB
+                  process:
+                    type: object
+                    properties:
+                      pid:
+                        type: number
+                      nodeVersion:
+                        type: string
+                      platform:
+                        type: string
+                      cpuUsage:
+                        type: object
+
+  /api/logs:
+    post:
+      tags:
+        - Health
+      summary: Envia logs do client-side
+      description: Endpoint interno para receber logs estruturados do navegador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogEntry'
+      responses:
+        '200':
+          description: Log recebido com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Log inválido
+        '500':
+          description: Erro ao processar log
+
+  /api/errors:
+    post:
+      tags:
+        - Health
+      summary: Envia erros do client-side
+      description: Endpoint interno para receber erros capturados no navegador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorData'
+      responses:
+        '200':
+          description: Erro recebido com sucesso
+        '400':
+          description: Dados de erro inválidos
+        '500':
+          description: Erro ao processar
+
+  /api/pagamento:
+    post:
+      tags:
+        - Pagamento
+      summary: Cria preferência de pagamento
+      description: Cria uma preferência de pagamento no Mercado Pago
+      security:
+        - supabaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - planType
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                  example: "123e4567-e89b-12d3-a456-426614174000"
+                planType:
+                  type: string
+                  enum: [mensal, anual]
+                  example: mensal
+      responses:
+        '200':
+          description: Preferência criada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: ID da preferência do Mercado Pago
+                    example: "123456789-abcd-1234-efgh-123456789012"
+                  init_point:
+                    type: string
+                    format: uri
+                    description: URL para checkout
+                    example: "https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=123456789"
+        '400':
+          description: Dados inválidos
+        '401':
+          description: Não autenticado
+        '500':
+          description: Erro ao criar preferência
+
+  /api/mp-webhook:
+    post:
+      tags:
+        - Pagamento
+      summary: Webhook do Mercado Pago
+      description: Recebe notificações de pagamento do Mercado Pago
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+          description: ID do pagamento
+        - in: query
+          name: topic
+          schema:
+            type: string
+            enum: [payment, merchant_order]
+          description: Tipo de notificação
+      responses:
+        '200':
+          description: Webhook processado
+        '400':
+          description: Dados inválidos
+        '500':
+          description: Erro ao processar webhook
+
+components:
+  schemas:
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          example: healthy
+        message:
+          type: string
+          example: Connected
+        timestamp:
+          type: string
+          format: date-time
+
+    LogEntry:
+      type: object
+      required:
+        - level
+        - message
+        - timestamp
+      properties:
+        level:
+          type: string
+          enum: [debug, info, warn, error]
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        context:
+          type: object
+        error:
+          type: object
+        userId:
+          type: string
+        sessionId:
+          type: string
+
+    ErrorData:
+      type: object
+      required:
+        - message
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+        category:
+          type: string
+          enum: [authentication, authorization, validation, network, database, payment, unknown]
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        context:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+
+    Aula:
+      type: object
+      properties:
+        _id:
+          type: string
+        titulo:
+          type: string
+        descricao:
+          type: string
+        videoUrl:
+          type: string
+          format: uri
+        duracao:
+          type: number
+          description: Duração em minutos
+        ordem:
+          type: number
+        categoria:
+          type: string
+        disponivel:
+          type: boolean
+
+  securitySchemes:
+    supabaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT do Supabase Auth

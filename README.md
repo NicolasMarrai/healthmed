@@ -18,6 +18,7 @@ Uma plataforma de ensino médico online com sistema de pagamentos integrado, aut
 - [Monitoramento, Observabilidade e Analytics](#-monitoramento-observabilidade-e-analytics)
 - [Deploy](#-deploy)
 - [Segurança](#-segurança)
+- [Documentação](#-documentação)
 - [Contribuição](#contribuição)
 
 ## 📖 Sobre o Projeto
@@ -804,6 +805,110 @@ PostHog: Maioria dos usuários sai antes de 5s
 2. **Webhook Secret**: Usando valor placeholder em desenvolvimento
 3. **Rate Limiting**: Não implementado (desenvolvimento)
 
+## 📚 Documentação
+
+O projeto possui documentação completa e detalhada:
+
+### 📖 Documentação Disponível
+
+| Documento | Descrição | Link |
+|-----------|-----------|------|
+| **SETUP.md** | Guia completo de configuração do ambiente | [Ver →](./SETUP.md) |
+| **CONTRIBUTING.md** | Guia de contribuição e padrões de código | [Ver →](./CONTRIBUTING.md) |
+| **MONITORING.md** | Sistema de monitoramento e observabilidade | [Ver →](./MONITORING.md) |
+| **DEPLOY.md** | Guia de deploy em produção | [Ver →](./DEPLOY.md) |
+| **SENTRY.md** | Configuração do Sentry (opcional) | [Ver →](./SENTRY.md) |
+| **openapi.yaml** | Documentação da API (OpenAPI/Swagger) | [Ver →](./openapi.yaml) |
+| **EXAMPLES-CODE.md** | Exemplos práticos de código | [Ver →](./EXAMPLES-CODE.md) |
+
+### 🔧 Comandos de Documentação
+
+```bash
+# Ver documentação da API no Swagger Editor
+npm run docs:api
+
+# Servir documentação da API localmente (requer @redocly/cli)
+npm run docs:serve
+
+# Verificar tipos TypeScript
+npm run type-check
+```
+
+### 📘 Visualizar API Documentation
+
+#### Opção 1: Swagger Editor Online
+1. Acesse: https://editor.swagger.io
+2. File → Import File → Selecione `openapi.yaml`
+3. Explore a documentação interativa
+
+#### Opção 2: Redoc (Local)
+```bash
+# Instalar Redoc CLI
+npm install -g @redocly/cli
+
+# Servir documentação
+npx @redocly/cli preview-docs openapi.yaml
+
+# Acessar em http://localhost:8080
+```
+
+#### Opção 3: VS Code
+- Instale a extensão "OpenAPI (Swagger) Editor"
+- Abra `openapi.yaml`
+- Clique em "Preview" no canto superior direito
+
+### 📝 JSDoc
+
+Todos os arquivos principais possuem documentação JSDoc:
+
+```typescript
+/**
+ * Formata um valor monetário para o padrão brasileiro
+ * 
+ * @param value - Valor numérico em reais
+ * @param options - Opções de formatação
+ * @returns String formatada (ex: "R$ 1.234,56")
+ * 
+ * @example
+ * ```ts
+ * formatCurrency(1234.56); // "R$ 1.234,56"
+ * ```
+ */
+export function formatCurrency(value: number, options?: FormatOptions): string {
+  // ...
+}
+```
+
+### 🗺️ Guias por Tópico
+
+#### Para Iniciantes
+1. Leia `SETUP.md` para configurar o ambiente
+2. Siga `CONTRIBUTING.md` para entender os padrões
+3. Explore `EXAMPLES-CODE.md` para ver exemplos práticos
+
+#### Para Deploy
+1. `DEPLOY.md` - Guia completo de deployment
+2. `MONITORING.md` - Configurar monitoramento em produção
+3. `openapi.yaml` - Documentação da API para equipe DevOps
+
+#### Para Desenvolvimento
+1. `CONTRIBUTING.md` - Padrões de código e workflow
+2. `EXAMPLES-CODE.md` - Exemplos de uso dos sistemas
+3. `MONITORING.md` - Como usar logs, analytics e error tracking
+
+### 🎯 Status da Documentação
+
+- [x] API Documentation (OpenAPI/Swagger)
+- [x] Code Documentation (JSDoc)
+- [x] Deployment Guides (DEPLOY.md)
+- [x] Environment Setup (SETUP.md)
+- [x] Contributing Guidelines (CONTRIBUTING.md)
+- [x] Monitoring & Observability (MONITORING.md)
+- [x] Code Examples (EXAMPLES-CODE.md)
+- [x] Sentry Integration Guide (SENTRY.md)
+
+**Documentação 100% completa! ✅**
+
 ## 🤝 Contribuição
 
 1. Fork o projeto
@@ -826,6 +931,7 @@ Este projeto é de uso privado para fins educacionais.
 
 - **Nicolas Marrai** - [@NicolasMarrai](https://github.com/NicolasMarrai)
 - **Cauã Sarraf** - [@CauaOdM](https://github.com/CauaOdM)
+- **Lucca Pontes** - [@DEVLucca](https://github.com/DEVLucca)
 
 ## 📞 Suporte
 
