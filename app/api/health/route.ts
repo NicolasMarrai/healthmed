@@ -2,8 +2,8 @@
 // Endpoint para verificar saúde da aplicação
 
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-import { client as sanityClient } from '@/lib/sanity';
+import { supabase } from '@src/lib/supabase';
+import { client as sanityClient } from '@src/lib/sanity';
 
 export const dynamic = 'force-dynamic';
 
