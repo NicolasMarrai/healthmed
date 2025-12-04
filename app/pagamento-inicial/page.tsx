@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@src/lib/supabase';
+import { logger } from '@/lib/logger.client';
+import { analytics } from '@/lib/analytics';
 
 export default function PagamentoInicialPage() {
   const [loading, setLoading] = useState(false);
@@ -24,35 +26,44 @@ export default function PagamentoInicialPage() {
 
   // 2. Função para criar o pagamento
   const handleCheckout = async () => {
-    setLoading(true);
-    try {
-      // Chama a nossa API (que vamos criar no passo 6.3)
-      const response = await fetch('/api/pagamento', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          email: user.email,
-        }),
-      });
+  setLoading(true);
+  
+  try {
+    logger.payment.initiated(user.id, 0.50);
+    analytics.payment.initiated(0.50, 'premium');
 
-      const data = await response.json();
+    // Chama a nossa API
+    const response = await fetch('/api/pagamento', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: user.id,
+        email: user.email,
+      }),
+    });
 
-      if (data.url) {
-        // Redireciona para o Mercado Pago
-        window.location.href = data.url;
-      } else {
-        alert('Erro ao gerar link de pagamento');
-      }
-    } catch (error) {
-      console.error(error);
-      alert('Erro ao conectar com o servidor');
-    } finally {
-      setLoading(false);
+    const data = await response.json();
+
+    if (data.data?.init_point) {
+      logger.info('Redirecionando para Mercado Pago', { userId: user.id });
+      // Redireciona para o Mercado Pago
+      window.location.href = data.data.init_point;
+    } else {
+      logger.error('Erro ao gerar link de pagamento', { userId: user.id, data });
+      analytics.payment.failed('Link de pagamento não gerado');
+      alert('Erro ao gerar link de pagamento');
     }
-  };
+  } catch (error) {
+    logger.error('Erro ao conectar com servidor', { error, userId: user.id });
+    analytics.payment.failed('Erro de conexão');
+    console.error(error);
+    alert('Erro ao conectar com o servidor');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">

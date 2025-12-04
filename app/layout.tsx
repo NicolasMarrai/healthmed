@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import ErrorBoundary from "../components/ErrorBoundary";
+import { Providers } from './providers';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,9 +22,9 @@ export const metadata: Metadata = {
   creator: "HealthMed",
   publisher: "HealthMed",
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
   openGraph: {
     title: "HealthMed - Transforme sua Educação Médica",
@@ -44,11 +45,12 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -62,7 +64,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ErrorBoundary>
-          {children}
+          <Providers>
+            {children}
+          </Providers>
         </ErrorBoundary>
       </body>
     </html>

@@ -4,9 +4,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@src/lib/supabase';
 import { LoadingButton } from '../../components/Loading';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import { logger } from '@/lib/logger.client';
+import { analytics } from '@/lib/analytics';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -54,35 +56,44 @@ export default function LoginPage() {
   }
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErro(''); 
-    setCarregando(true);
+  e.preventDefault();
+  setErro(''); 
+  setCarregando(true);
 
-    try {
-      // 1. Tenta logar o usuário no Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password: senha,
-      });
+  try {
+    // Log da tentativa de login
+    logger.info('Tentativa de login', { email });
 
-      if (authError) {
-        setErro(authError.message || 'E-mail ou senha incorretos.');
-        setCarregando(false);
-        return;
-      }
-      
-      const userId = authData.user?.id;
-      if (!userId) throw new Error("ID de usuário não encontrado após login.");
+    // 1. Tenta logar o usuário no Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password: senha,
+    });
 
-      // 2. Continua a checagem e redireciona
-      await checarStatusAssinatura(userId);
-
-
-    } catch (error: any) {
-      setErro(error.message || 'Erro desconhecido durante o login.');
+    if (authError) {
+      // Log de falha
+      logger.auth.failed(email, authError.message);
+      setErro(authError.message || 'E-mail ou senha incorretos.');
       setCarregando(false);
+      return;
     }
-  };
+    
+    const userId = authData.user?.id;
+    if (!userId) throw new Error("ID de usuário não encontrado após login.");
+
+    // Logs e analytics de sucesso
+    logger.auth.login(userId, email);
+    analytics.auth.login(userId, 'email');
+
+    // 2. Continua a checagem e redireciona
+    await checarStatusAssinatura(userId);
+
+  } catch (error: any) {
+    logger.error('Erro durante login', { error: error.message, email });
+    setErro(error.message || 'Erro desconhecido durante o login.');
+    setCarregando(false);
+  }
+};
 
   return (
     <ErrorBoundary fallback={

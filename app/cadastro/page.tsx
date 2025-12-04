@@ -4,7 +4,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase'; // Conexão Supabase......
+import { supabase } from '@src/lib/supabase'; // Conexão Supabase......
+import { logger } from '@/lib/logger.client';
+import { analytics } from '@/lib/analytics';
+
 
 export default function CadastroPage() {
   const [nome, setNome] = useState('');
@@ -15,38 +18,48 @@ export default function CadastroPage() {
   const router = useRouter();
 
   const handleCadastro = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErro('');
-    setCarregando(true);
+  e.preventDefault();
+  setErro('');
+  setCarregando(true);
 
-    try {
-      // 1. Tenta criar o usuário no Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password: senha,
-        options: {
-          // Passa o nome para ser usado pelo Trigger SQL (Passo 5)
-          data: { nome: nome }, 
-        },
-      });
+  try {
+    // Log da tentativa de cadastro
+    logger.info('Tentativa de cadastro', { email, nome });
 
-      if (authError) {
-        // Exibe a mensagem de erro do Supabase (ex: "Anonymous sign-ins are disabled")
-        setErro(authError.message || 'Erro no cadastro. Verifique a senha (mínimo 6 caracteres)');
-        setCarregando(false);
-        return;
-      }
-      
-      // Se o cadastro Auth for um sucesso, redireciona para o pagamento.
-      router.push('/pagamento-inicial'); 
+    // 1. Tenta criar o usuário no Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password: senha,
+      options: {
+        data: { nome: nome }, 
+      },
+    });
 
-    } catch (error: any) {
-      console.error(error);
-      setErro('Erro desconhecido durante o cadastro.');
-    } finally {
+    if (authError) {
+      // Log de falha
+      logger.auth.failed(email, authError.message);
+      setErro(authError.message || 'Erro no cadastro. Verifique a senha (mínimo 6 caracteres)');
       setCarregando(false);
+      return;
     }
-  };
+
+    // Logs e analytics de sucesso
+    const userId = authData.user?.id;
+    if (userId) {
+      logger.auth.register(userId, email);
+      analytics.auth.register(userId);
+    }
+    
+    router.push('/pagamento-inicial'); 
+
+  } catch (error: any) {
+    logger.error('Erro durante cadastro', { error: error.message, email });
+    console.error(error);
+    setErro('Erro desconhecido durante o cadastro.');
+  } finally {
+    setCarregando(false);
+  }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
