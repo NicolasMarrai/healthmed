@@ -181,22 +181,6 @@ MP_WEBHOOK_URL=sua_url_de_webhook
 MP_WEBHOOK_SECRET=sua_chave_secreta_de_webhook
 ```
 
-### Sentry (Monitoramento de Erros)
-```env
-NEXT_PUBLIC_SENTRY_DSN=sua_chave_do_sentry
-```
-
-### PostHog (Analytics)
-```env
-NEXT_PUBLIC_POSTHOG_KEY=sua_chave_do_posthog
-NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
-```
-
-### Configurações Gerais
-```env
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-```
-
 ## 📱 Como Usar
 
 ### Para Usuários
@@ -377,13 +361,6 @@ O Sentry funciona como um **sistema de alerta inteligente**. Quando um erro ocor
 3. Sentry captura automaticamente
 4. Você recebe notificação no Sentry
 5. Pode ver: stack trace, navegador, país do usuário, etc.
-
-**Variáveis de Ambiente Necessárias:**
-```env
-NEXT_PUBLIC_SENTRY_DSN=sua_chave_do_sentry
-```
-
----
 
 ### 📈 **PostHog** - Analytics e Comportamento dos Usuários
 
