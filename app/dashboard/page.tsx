@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { client } from "@src/lib/sanity";
 import { analytics } from '@/lib/analytics';
 
 interface Aula {
@@ -22,26 +21,21 @@ export default function DashboardPage() {
   useEffect(() => {
     const loadAulas = async () => {
       try {
-        console.log('🔍 Iniciando busca de aulas...');
-        
-        // Query GROQ corrigida
-        const query = `*[_type == "aula" && !(_id in path("drafts.**"))] | order(ordem asc, _createdAt asc) {
-          _id,
-          titulo,
-          ordem,
-          materia->{
-            titulo
-          },
-          "videoUrl": videoFile.asset->url
-        }`;
-        
-        console.log('🔍 Executando query...');
-        
-        const data = await client.fetch(query);
-        
-        console.log('✅ Dados recebidos:', data);
+        console.log('🔍 Iniciando busca de aulas via /api/aulas ...');
+
+        const res = await fetch('/api/aulas');
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`API /api/aulas retornou ${res.status}: ${text}`);
+        }
+
+        const json = await res.json();
+        const data = Array.isArray(json?.data) ? json.data : json;
+
+        console.log('✅ Dados recebidos (api):', data);
         console.log('📊 Quantidade de aulas:', data.length);
-        
+
         setAulas(data);
         analytics.page.view('Dashboard');
       } catch (error) {
