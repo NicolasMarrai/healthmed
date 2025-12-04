@@ -10,10 +10,11 @@ Uma plataforma de ensino médico online com sistema de pagamentos integrado, aut
 - [Estrutura do Projeto](#estrutura-do-projeto)
 - [Configuração e Instalação](#configuração-e-instalação)
 - [Variáveis de Ambiente](#variáveis-de-ambiente)
-- [Como Usar](#como-usar)
-- [API Endpoints](#api-endpoints)
-- [Banco de Dados](#banco-de-dados)
-- [Pagamentos](#pagamentos)
+- [Guia de Utilização](#-guia-de-utilização---passo-a-passo)
+- [Como Usar](#-como-usar)
+- [API Endpoints](#-api-endpoints)
+- [Banco de Dados](#-banco-de-dados)
+- [Pagamentos](#-pagamentos)
 - [Monitoramento, Observabilidade e Analytics](#-monitoramento-observabilidade-e-analytics)
 - [Deploy](#-deploy)
 - [Segurança](#-segurança)
@@ -171,6 +172,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
 ```env
 NEXT_PUBLIC_SANITY_PROJECT_ID=seu_project_id_do_sanity
 NEXT_PUBLIC_SANITY_DATASET=production
+SANITY_PROJECT_ID=seu_project_id_do_sanity
+SANITY_DATASET=production
+SANITY_API_TOKEN=seu_token_de_api_do_sanity (opcional)
 ```
 
 ### Mercado Pago
@@ -181,34 +185,314 @@ MP_WEBHOOK_URL=sua_url_de_webhook
 MP_WEBHOOK_SECRET=sua_chave_secreta_de_webhook
 ```
 
+### Sentry (Monitoramento de Erros)
+```env
+NEXT_PUBLIC_SENTRY_DSN=sua_chave_do_sentry
+```
+
+### PostHog (Analytics)
+```env
+NEXT_PUBLIC_POSTHOG_KEY=sua_chave_do_posthog
+NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
+```
+
+### Configurações Gerais
+```env
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NODE_ENV=development
+```
+
+## 📖 Guia de Utilização - Passo-a-Passo
+
 ## 📱 Como Usar
 
-### Para Usuários
+### ⚡ Início Rápido (Primeiros 5 Minutos)
 
-1. **Cadastro/Login**
-   - Acesse `/cadastro` para criar uma conta
-   - Ou `/login` para entrar com conta existente
+Se você quer testar rápido SEM configurar tudo:
 
-2. **Pagamento**
-   - Usuários sem assinatura ativa são direcionados para `/pagamento-inicial`
-   - Complete o pagamento via Mercado Pago
-   - Após confirmação, o acesso será liberado automaticamente
+```bash
+# 1. Clone e instale
+git clone https://github.com/NicolasMarrai/healthmed.git
+cd healthmed
+npm install
 
-3. **Dashboard**
-   - Usuários com assinatura ativa acessam `/dashboard`
-   - Visualize e assista as aulas disponíveis
-   - Navegue pelo conteúdo educativo
+# 2. Copie o arquivo de ambiente (criará com valores vazios)
+cp .env.example .env.local
 
-### Para Administradores
+# 3. Rode a aplicação
+npm run dev
 
-1. **Gestão de Conteúdo**
-   - Acesse o painel Sanity para adicionar/editar aulas
-   - Upload de vídeos e materiais
-   - Organização do conteúdo
+# 4. Abra no navegador
+# http://localhost:3000
+```
 
-2. **Monitoramento**
-   - Acompanhe pagamentos no painel Mercado Pago
-   - Verifique status de usuários no Supabase
+**O que funciona sem configurar:**
+- ✅ Página inicial (homepage)
+- ✅ Dashboard com vídeos de exemplo
+- ⚠️ Cadastro/Login (precisa Supabase)
+- ⚠️ Pagamento (precisa Mercado Pago)
+
+---
+
+### 🔌 Guia Completo - Configurar Tudo
+
+#### Passo 1: Preparar o Repositório
+
+```bash
+# Clone o projeto
+git clone https://github.com/NicolasMarrai/healthmed.git
+cd healthmed
+
+# Instale dependências
+npm install
+
+# Verifique se Node.js 18+ está instalado
+node --version
+```
+
+#### Passo 2: Configurar Supabase (Banco de Dados)
+
+1. **Crie uma conta** em [supabase.com](https://supabase.com)
+2. **Crie um novo projeto** (escolha a região mais próxima)
+3. **Copie as credenciais:**
+   - Vá para `Settings` → `API`
+   - Copie `Project URL` e `Anon Key`
+4. **Adicione ao `.env.local`:**
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima
+   ```
+
+5. **Configure o banco de dados:**
+   - Vá para `SQL Editor` no Supabase
+   - Execute este script:
+   ```sql
+   -- Criar tabela de usuários
+   CREATE TABLE usuarios (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     email TEXT UNIQUE NOT NULL,
+     status_assinatura TEXT DEFAULT 'PENDING',
+     created_at TIMESTAMPTZ DEFAULT NOW()
+   );
+
+   -- Criar tabela de pagamentos
+   CREATE TABLE pagamentos (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     user_id UUID REFERENCES usuarios(id),
+     mp_payment_id TEXT NOT NULL,
+     valor DECIMAL(10,2),
+     status TEXT,
+     created_at TIMESTAMPTZ DEFAULT NOW()
+   );
+
+   -- Habilitar RLS para segurança
+   ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
+   ALTER TABLE pagamentos ENABLE ROW LEVEL SECURITY;
+   ```
+
+#### Passo 3: Configurar Sanity (CMS - Conteúdo)
+
+1. **Crie uma conta** em [sanity.io](https://sanity.io)
+2. **Crie um novo projeto** (template em branco)
+3. **Copie as credenciais:**
+   - Vá para `Settings` → `API` → `Tokens`
+   - Copie o `Project ID`
+4. **Adicione ao `.env.local`:**
+   ```env
+   NEXT_PUBLIC_SANITY_PROJECT_ID=seu-project-id
+   NEXT_PUBLIC_SANITY_DATASET=production
+   SANITY_PROJECT_ID=seu-project-id
+   SANITY_DATASET=production
+   ```
+
+5. **Configure o schema no Sanity:**
+   - Vá para `Manage` → `Plugins`
+   - Instale os plugins necessários (se houver)
+   - Crie uma colecção `aula` com os campos:
+     - `titulo` (string)
+     - `descricao` (text)
+     - `videoFile` (file)
+     - `materia` (reference to materia)
+     - `ordem` (number)
+
+#### Passo 4: Configurar Mercado Pago (Pagamentos)
+
+1. **Crie uma conta** em [mercadopago.com](https://mercadopago.com)
+2. **Acesse o painel de desenvolvedor:**
+   - Dashboard → Configurações → Credenciais
+3. **Copie:**
+   - `Access Token` (chave privada)
+   - `Public Key` (chave pública)
+4. **Adicione ao `.env.local`:**
+   ```env
+   MP_ACCESS_TOKEN=seu_access_token
+   NEXT_PUBLIC_MP_PUBLIC_KEY=sua_chave_publica
+   ```
+
+5. **Configure o webhook** (para receber notificações de pagamento):
+   - Dashboard → Notificações → Webhooks
+   - Adicione: `https://seudominio.com/api/mp-webhook`
+   - Copie o Secret e adicione:
+   ```env
+   MP_WEBHOOK_SECRET=seu_secret
+   ```
+
+#### Passo 5: Configurar Sentry (Monitoramento de Erros)
+
+1. **Crie uma conta** em [sentry.io](https://sentry.io)
+2. **Crie um novo projeto:**
+   - Platform: `Next.js`
+3. **Copie o DSN:**
+   - Vá para `Settings` → `Client Keys (DSN)`
+4. **Adicione ao `.env.local`:**
+   ```env
+   NEXT_PUBLIC_SENTRY_DSN=sua_dsn_url
+   ```
+
+#### Passo 6: Configurar PostHog (Analytics)
+
+1. **Crie uma conta** em [posthog.com](https://posthog.com)
+2. **Crie um novo projeto:**
+   - Type: `Web`
+3. **Copie a chave:**
+   - Vá para `Settings` → `Project settings`
+4. **Adicione ao `.env.local`:**
+   ```env
+   NEXT_PUBLIC_POSTHOG_KEY=sua_chave
+   NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
+   ```
+
+#### Passo 7: Iniciar o Projeto
+
+```bash
+# Inicie o servidor de desenvolvimento
+npm run dev
+
+# Abra em seu navegador
+# http://localhost:3000
+```
+
+---
+
+### 🧪 Testando a Aplicação
+
+#### Testar Cadastro/Login
+
+1. Acesse `http://localhost:3000/cadastro`
+2. Preencha com um email e senha
+3. Clique em "Cadastrar"
+4. Você será redirecionado para `/login`
+5. Faça login com suas credenciais
+
+#### Testar Pagamento (Simulado)
+
+1. Faça login
+2. Acesse `http://localhost:3000/pagamento-inicial`
+3. Clique em "Escolher Plano"
+4. **Dados de teste do Mercado Pago:**
+   ```
+   Cartão: 5016 7576 5726 4729
+   Vencimento: 11/25
+   CVV: 123
+   Titular: TESTE
+   ```
+
+#### Testar Dashboard
+
+1. Após completar pagamento
+2. Acesse `http://localhost:3000/dashboard`
+3. Você verá as aulas disponíveis
+4. Clique em um vídeo para reproduzir
+
+#### Testar Monitoramento
+
+**Sentry:**
+1. Acesse [sentry.io](https://sentry.io)
+2. Procure seu projeto
+3. Simule um erro clicando em um botão "quebrado"
+4. Verifique se aparece em `Issues`
+
+**PostHog:**
+1. Acesse [posthog.com](https://posthog.com)
+2. Procure seu projeto
+3. Vá para `Insights`
+4. Você verá eventos rastreados (Page Views, User Login, etc)
+
+---
+
+### 🔍 Troubleshooting - Resolvendo Problemas
+
+#### "Erro: Module not found '@/lib/sanity'"
+- **Solução:** Verifique se o arquivo `src/lib/sanity.ts` existe
+- **Verificar:** `ls src/lib/` (ou use o explorador de arquivos)
+
+#### "Erro: Cannot connect to Supabase"
+- **Solução:** Verifique as credenciais em `.env.local`
+- **Verificar:** `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` estão corretos?
+
+#### "Dashboard não carrega vídeos"
+- **Solução:** Verifique se aulas foram criadas no Sanity
+- **Verificar:** Vá para seu projeto Sanity e crie uma aula com vídeo
+
+#### "Pagamento não funciona"
+- **Solução:** Verifique o console do navegador (F12)
+- **Verificar:** Se `MP_ACCESS_TOKEN` está correto em `.env.local`
+- **Nota:** Em desenvolvimento, use os dados de teste acima
+
+#### "Sentry não rastreia erros"
+- **Solução:** Verifique se `NEXT_PUBLIC_SENTRY_DSN` está correto
+- **Verificar:** Console (F12) - deve aparecer mensagem de inicialização do Sentry
+
+#### "PostHog não rastreia eventos"
+- **Solução:** Verifique se `NEXT_PUBLIC_POSTHOG_KEY` está correto
+- **Verificar:** Abra PostHog e procure por eventos recentes
+
+---
+
+### 📊 Comandos Úteis
+
+```bash
+# Desenvolvimento
+npm run dev                # Inicia servidor com hot-reload
+
+# Produção
+npm run build              # Build otimizado
+npm run start              # Inicia servidor de produção
+
+# Qualidade de Código
+npm run lint               # Verifica código com ESLint
+npm run lint --fix         # Corrige erros automaticamente
+
+# Testes
+npm test                   # Executa testes
+
+# Limpeza
+npm run clean              # Remove cache e builds anteriores
+rm -rf .next node_modules  # Limpa tudo (Linux/Mac)
+```
+
+---
+
+### 💡 Dicas Úteis
+
+1. **Abra DevTools (F12)** para ver logs e erros do console
+2. **Comece simples** - Configure apenas Supabase + Sanity no início
+3. **Use dados de teste** - Mercado Pago fornece credenciais de teste
+4. **Monitore a performance** - Use Sentry para acompanhar erros em produção
+5. **Rastreie o comportamento** - Use PostHog para entender seus usuários
+
+---
+
+### 🎯 Próximas Etapas
+
+Após configurar tudo:
+
+1. **Adicione seu conteúdo** - Vá para Sanity e crie suas aulas
+2. **Customize o design** - Edite `tailwind.config.ts` para suas cores
+3. **Configure domínio** - Mude `NEXT_PUBLIC_SITE_URL` para seu domínio
+4. **Deploy em produção** - Suba para Vercel, Railway ou outro host
+
+
 
 ## 🔌 API Endpoints
 
@@ -541,6 +825,7 @@ Este projeto é de uso privado para fins educacionais.
 ## 👥 Autores
 
 - **Nicolas Marrai** - [@NicolasMarrai](https://github.com/NicolasMarrai)
+- **Cauã Sarraf** - [@CauaOdM](https://github.com/CauaOdM)
 
 ## 📞 Suporte
 
